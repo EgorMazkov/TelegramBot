@@ -1,13 +1,21 @@
 package my.bot.telegrambot.app;
 
-import org.springframework.boot.SpringApplication;
+import my.bot.telegrambot.service.TelegramBot;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @SpringBootApplication
 public class TelegramBotApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TelegramBotApplication.class, args);
+        try {
+            TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+            botsApi.registerBot(new TelegramBot("task_telegram_bot", "5649659739:AAHhq_WRXaS-dxj_j7AxlyWE6wQbvavDUsM"));
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
 }
