@@ -16,8 +16,9 @@ public class TelegramBot extends TelegramLongPollingBot {
     private final String BOT_TOKEN;
     private Long CHAT_ID;
 
-//    private Map<String, Long[]> familyMap = new HashMap<>();
+
     private String PREVIOUS_MESSAGE = "";
+    List<Family> families = new ArrayList<>();
 
     public TelegramBot(String botName, String botToken) {
         BOT_NAME = botName;
@@ -26,7 +27,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         listOfCommands.add(new BotCommand("/start", "start bot"));
         listOfCommands.add(new BotCommand("/calculator", "Подсчет"));
-//        listofCommands.add(new BotCommand("/family", "вход в семью"));
+        listOfCommands.add(new BotCommand("/family", "вход в семью"));
+        listOfCommands.add(new BotCommand("/messageFamily", "сообщение семье"));
     }
 
     @Override
@@ -52,28 +54,93 @@ public class TelegramBot extends TelegramLongPollingBot {
             if (message.equals("/calculator")) {
                 sendMessage("Введите простое выражение через пробел: ");
             }
-//            if (message.equals("/family")) {
-//                sendMessage("Введите Фамилию, пароль через пробел:");
-//            }
+            if (message.equals("/family")) {
+                sendMessage("Введите Фамилию, пароль через пробел:");
+            }
+            if (message.equals("/messageFamily")) {
+                sendMessage("Введите сообщение:");
+            }
             if (!PREVIOUS_MESSAGE.equals("")) {
                 if (PREVIOUS_MESSAGE.equals("/calculator")) {
                     String answer = count(message);
                     sendMessage(answer);
                 }
-//                if (PREVIOUS_MESSAGE.equals("/family")) {
-//                    family(message);
-//                }
+                if (PREVIOUS_MESSAGE.equals("/family")) {
+                    family(message);
+                }
+                if (PREVIOUS_MESSAGE.equals("/messageFamily")) {
+                    int idFamily = checkFamily();
+                    sendMessageFamily(message, idFamily);
+                }
             }
-
+            System.out.println("---------------------------------------------------------------------");
+            System.out.println(userName + ": " + message);
+            System.out.println("---------------------------------------------------------------------");
             PREVIOUS_MESSAGE = message;
         }
     }
 
-//    private void family(String message) {
-//        String[] mass = message.split(" ");
-//
-//
-//    }
+    private int checkFamily() {
+        for (int i = 0; i < families.size(); i++) {
+            Family family = families.get(i);
+            Long[] checkId = family.getChatId();
+            for (int j = 0; j < checkId.length; j++) {
+                if (CHAT_ID.equals(checkId[i])) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private void sendMessageFamily(String message, int idFamily) {
+        if (idFamily == -1) {
+            sendMessage("Вы не в одной группе семьи");
+            return;
+        }
+        Family family = families.get(idFamily);
+
+        Long[] idUserFamily = family.getChatId();
+        for (int i = 0; i < idUserFamily.length; i++) {
+            if (!CHAT_ID.equals(idUserFamily[i])) {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(idUserFamily[i]);
+                sendMessage.setText(message);
+
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+    }
+
+    private void family(String message) {
+        int j = 0;
+        String[] massMessage = message.split(" ");
+
+            for (int i = 0; i < (long) families.size(); i++) {
+            Family family = families.get(i);
+            if (family.getName().equals(massMessage[0]) && family.getPassword().equals(massMessage[1])) {
+
+                Long[] chatid = family.getChatId();
+                Long[] chatIdNew = new Long[family.getChatId().length + 1];
+                for (; j < family.getChatId().length; j++) {
+                    chatIdNew[j] = chatid[j];
+                }
+                chatIdNew[j] = CHAT_ID;
+                family.setChatId(chatIdNew);
+                families.remove(i);
+                families.add(family);
+                return;
+            }
+        }
+
+        Family familyNew = new Family(massMessage[0], massMessage[1], CHAT_ID);
+        families.add(familyNew);
+    }
 
 
     private String count(String message) {
