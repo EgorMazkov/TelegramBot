@@ -5,6 +5,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.*;
@@ -73,6 +75,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessageFamily(message, idFamily);
                 }
             }
+
+            //TODO delete
             System.out.println("---------------------------------------------------------------------");
             System.out.println(userName + ": " + message);
             System.out.println("---------------------------------------------------------------------");
